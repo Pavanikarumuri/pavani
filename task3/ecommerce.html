@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Single Page Application</title>  
+    <link rel="stylesheet" href="ecommerce.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+</head>
+<body>
+    <nav>
+        <a id="nav-signup">Sign Up</a>
+        <a id="nav-login">Login</a>
+        <a id="nav-dashboard">Dashboard</a>
+    </nav>
+
+    <!-- Sign-Up Page -->
+    <div id="signupPage" class="form-container">
+        <h2>Sign Up</h2>
+        <form id="signUpForm">
+            <input type="text" id="name" placeholder="Name" required>
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+            <button type="submit">Sign Up</button>
+        </form>
+        <div id="signupMessage"></div>
+    </div>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="form-container hidden">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="email" id="loginEmail" placeholder="Email" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <div id="loginMessage"></div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboardPage" class="hidden">
+        <div class="navbar">
+            <a href="#home">Logo</a>
+            <a href="#cart" class="cart-icon">Cart <i class='bx bxs-cart'></i>(<span id="cart-count">0</span>)</a>
+            <a href="#user" class="user-icon"><i class='bx bxs-user'></i> User </a>
+        
+        </div>
+
+        <div class="product-list">
+            <div class="product">
+                <h3>Product 1</h3>
+                <button onclick="addToCart('Product 1')">Add to Cart</button>
+                <button onclick="buyProduct('Product 1')">Buy</button>
+            </div>
+            <div class="product">
+                <h3>Product 2</h3>
+                <button onclick="addToCart('Product 2')">Add to Cart</button>
+                <button onclick="buyProduct('Product 2')">Buy</button>
+            </div>
+            <div class="product">
+                <h3>Product 3</h3>
+                <button onclick="addToCart('Product 3')">Add to Cart</button>
+                <button onclick="buyProduct('Product 3')">Buy</button>
+            </div>
+            <div class="product">
+                <h3>Product 4</h3>
+                <button onclick="addToCart('Product 4')">Add to Cart</button>
+                <button onclick="buyProduct('Product 4')">Buy</button>
+            </div>
+            <div class="product">
+                <h3>Product 5</h3>
+                <button onclick="addToCart('Product 5')">Add to Cart</button>
+                <button onclick="buyProduct('Product 5')">Buy</button>
+            </div>
+            <div class="product">
+                <h3>Product 6</h3>
+                <button onclick="addToCart('Product 6')">Add to Cart</button>
+                <button onclick="buyProduct('Product 6')">Buy</button>
+            </div>
+            <div class="product">
+                <h3>Product 7</h3>
+                <button onclick="addToCart('Product 7')">Add to Cart</button>
+                <button onclick="buyProduct('Product 7')">Buy</button>
+            </div>
+            <div class="product">
+                <h3>Product 8</h3>
+                <button onclick="addToCart('Product 8')">Add to Cart</button>
+                <button onclick="buyProduct('Product 8')">Buy</button>
+            </div>
+            <!-- Add more products as needed -->
+        </div>
+
+        <div id="cartPage" class="form-container hidden">
+            <h2>Cart</h2>
+            <div id="cartItems"></div>
+            <button onclick="checkout()">Checkout</button>
+            
+        </div>
+
+        <div id="purchasePage" class="form-container hidden">
+            <h2>Purchased Items</h2>
+            <div id="purchaseItems"></div>
+        </div>
+    </div>
+
+    <script>
+        // Navigation Links
+        document.getElementById('nav-signup').addEventListener('click', () => {
+            document.getElementById('signupPage').classList.remove('hidden');
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('dashboardPage').classList.add('hidden');
+        });
+        document.getElementById('nav-login').addEventListener('click', () => {
+            document.getElementById('signupPage').classList.add('hidden');
+            document.getElementById('loginPage').classList.remove('hidden');
+            document.getElementById('dashboardPage').classList.add('hidden');
+        });
+        document.getElementById('nav-dashboard').addEventListener('click', () => {
+            document.getElementById('signupPage').classList.add('hidden');
+            document.getElementById('loginPage').classList.add('hidden');
+            document.getElementById('dashboardPage').classList.remove('hidden');
+            updateCartCount();
+            displayPurchasedItems();
+        });
+
+        // Sign-Up Form
+        document.getElementById('signUpForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            let name = document.getElementById('name').value;
+            let email = document.getElementById('email').value;
+            let password = document.getElementById('password').value;
+            let confirmPassword = document.getElementById('confirmPassword').value;
+            let message = document.getElementById('signupMessage');
+
+            if (password !== confirmPassword) {
+                message.textContent = 'Passwords do not match.';
+                message.className = 'error';
+                return;
+            }
+
+            let userData = {
+                name: name,
+                email: email,
+                password: password
+            };
+
+            localStorage.setItem('user', JSON.stringify(userData));
+            message.textContent = 'Sign Up successful. Redirecting to login page...';
+            message.className = 'success';
+
+            setTimeout(() => {
+                document.getElementById('nav-login').click();
+            }, 2000);
+        });
+
+        // Login Form
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            let email = document.getElementById('loginEmail').value;
+            let password = document.getElementById('loginPassword').value;
+            let message = document.getElementById('loginMessage');
+
+            let storedUser = JSON.parse(localStorage.getItem('user'));
+
+            if (!storedUser || storedUser.email !== email) {
+                message.textContent = 'Email not found.';
+                message.className = 'error';
+                return;
+            }
+
+            if (storedUser.password !== password) {
+                message.textContent = 'Incorrect password.';
+                message.className = 'error';
+                return;
+            }
+
+            message.textContent = 'Login successful. Redirecting to dashboard...';
+            message.className = 'success';
+
+            setTimeout(() => {
+                document.getElementById('nav-dashboard').click();
+            }, 2000);
+        });
+
+        // Add to Cart Function
+        function addToCart(productName) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.push(productName);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+        }
+
+        // Buy Product Function
+        function buyProduct(productName) {
+            let purchased = JSON.parse(localStorage.getItem('purchased')) || [];
+            purchased.push(productName);
+            localStorage.setItem('purchased', JSON.stringify(purchased));
+            alert('Product purchased successfully!');
+            displayPurchasedItems();
+        }
+
+        // Update Cart Count
+        function updateCartCount() {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        // View Cart
+        document.querySelector('.cart-icon').addEventListener('click', () => {
+            let cartItems = JSON.parse(localStorage.getItem('cart')) || [];
+            let cartItemsContainer = document.getElementById('cartItems');
+            cartItemsContainer.innerHTML = '';
+
+            cartItems.forEach((item, index) => {
+                let div = document.createElement('div');
+                div.className = 'cart-item';
+                div.textContent = item;
+                
+                let deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => {
+                    removeFromCart(index);
+                };
+                
+                div.appendChild(deleteBtn);
+                cartItemsContainer.appendChild(div);
+            });
+
+            document.getElementById('cartPage').classList.remove('hidden');
+            
+        });
+
+        // Remove from Cart Function
+        function removeFromCart(index) {
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCartCount();
+            document.querySelector('.cart-icon').click(); // Refresh cart view
+        }
+
+        // Checkout Function
+        function checkout() {
+            alert('Checked out successfully!');
+            localStorage.removeItem('cart');
+            updateCartCount();
+            document.getElementById('cartPage').classList.add('hidden');
+            document.getElementById('dashboardPage').classList.remove('hidden');
+        }
+
+        // Display Purchased Items
+        function displayPurchasedItems() {
+            let purchasedItems = JSON.parse(localStorage.getItem('purchased')) || [];
+            let purchaseItemsContainer = document.getElementById('purchaseItems');
+            purchaseItemsContainer.innerHTML = '';
+
+            purchasedItems.forEach((item, index) => {
+                let div = document.createElement('div');
+                div.className = 'purchase-item';
+                div.textContent = item;
+
+                let deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.onclick = () => {
+                    removeFromPurchased(index);
+                };
+
+                div.appendChild(deleteBtn);
+                purchaseItemsContainer.appendChild(div);
+            });
+
+            document.getElementById('purchasePage').classList.remove('hidden');
+        }
+
+        // Remove from Purchased Items Function
+        function removeFromPurchased(index) {
+            let purchased = JSON.parse(localStorage.getItem('purchased')) || [];
+            purchased.splice(index, 1);
+            localStorage.setItem('purchased', JSON.stringify(purchased));
+            displayPurchasedItems(); // Refresh purchased items view
+        }
+
+        // Logout Function
+        document.querySelector('.user-icon').addEventListener('click', () => {
+            if (confirm('Do you want to log out?')) {
+                document.getElementById('nav-login').click();
+            }
+        });
+    </script>
+</body>
+</html>
